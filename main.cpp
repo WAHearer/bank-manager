@@ -23,6 +23,15 @@ class CircularQueue{
 private:
     QueueNode *head,*tail;
     int length,size,chunksize;//length为总空间，size为已分配空间
+    void expand(){
+        QueueNode *p=this->tail;
+        for(int i=1;i<=this->chunksize;i++){
+            p->next=(QueueNode*)malloc(sizeof(QueueNode));
+            p=p->next;
+        }
+        p->next=this->head;
+        this->length+=this->chunksize;
+    }
 public:
     explicit CircularQueue(int chunksize):length(chunksize),size(0),chunksize(chunksize){
         this->head=(QueueNode*)malloc(sizeof(QueueNode));
@@ -43,15 +52,6 @@ public:
             if(i!=this->length)
                 p=nxt;
         }
-    }
-    void expand(){
-        QueueNode *p=this->tail;
-        for(int i=1;i<=this->chunksize;i++){
-            p->next=(QueueNode*)malloc(sizeof(QueueNode));
-            p=p->next;
-        }
-        p->next=this->head;
-        this->length+=this->chunksize;
     }
     void push(CustNode node){
         if(this->tail->next==this->head)
@@ -135,7 +135,8 @@ public:
                 usableMemory.push(temp);
                 size--;
             }
-            p=eventlist[p].next;
+            else
+                p=eventlist[p].next;
         }
         return {solved,sum};
     }
@@ -155,32 +156,17 @@ private:
     int total,closetime,maxDurtime,minDurtime,maxAmount,minAmount,maxInterval,minInterval;
     CircularQueue q1,q2;
     Eventlist list;
-public:
-    Bank():q1(chunksize),q2(chunksize){
-        std::cout<<"请输入银行初始资金total"<<std::endl;
-        std::cin>>total;
-        std::cout<<"请输入银行关闭时间closetime"<<std::endl;
-        std::cin>>closetime;
-        std::cout<<"请输入办理业务时间durtime的上界与下界"<<std::endl;
-        std::cin>>maxDurtime>>minDurtime;
-        std::cout<<"请输入业务金额amount的上界与下界"<<std::endl;
-        std::cin>>maxAmount>>minAmount;
-        std::cout<<"请输入业务时间间隔interval的上界与下界"<<std::endl;
-        std::cin>>maxInterval>>minInterval;
-    }
     void insert(int arrtime,int durtime,int amount){
         list.insert(arrtime,durtime,amount);
     }
     void generate(){
         int arrtime=0,durtime=rand()%(maxDurtime-minDurtime+1)+minDurtime,amount=rand()%(maxAmount-minAmount+1)+minAmount,interval=rand()%(maxInterval-minInterval+1)+minInterval;
-        while(arrtime<closetime){
-            insert(arrtime,durtime,amount);
+        while(arrtime<=closetime){
+            if(arrtime+durtime<=closetime)
+                insert(arrtime,durtime,amount);
             arrtime+=interval;
             durtime=rand()%(maxDurtime-minDurtime+1)+minDurtime,amount=rand()%(maxAmount-minAmount+1)+minAmount,interval=rand()%(maxInterval-minInterval+1)+minInterval;
         }
-    }
-    void print(){
-        list.print();
     }
     void run(){
         int size=list.getSize();
@@ -218,6 +204,22 @@ public:
                 }
             }
         }
+    }
+public:
+    Bank():q1(chunksize),q2(chunksize){
+        std::cout<<"请输入银行初始资金total"<<std::endl;
+        std::cin>>total;
+        std::cout<<"请输入银行关闭时间closetime"<<std::endl;
+        std::cin>>closetime;
+        std::cout<<"请输入办理业务时间durtime的上界与下界"<<std::endl;
+        std::cin>>maxDurtime>>minDurtime;
+        std::cout<<"请输入业务金额amount的上界与下界"<<std::endl;
+        std::cin>>maxAmount>>minAmount;
+        std::cout<<"请输入业务时间间隔interval的上界与下界"<<std::endl;
+        std::cin>>maxInterval>>minInterval;
+    }
+    void print(){
+        list.print();
     }
     float imitate(int days){
         int solved=0,sum=0;
