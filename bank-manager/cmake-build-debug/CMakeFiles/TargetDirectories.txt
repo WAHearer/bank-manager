@@ -1,3 +1,0 @@
-C:/Users/zhang/OneDrive/桌面/学习相关/程序/bank-manager/cmake-build-debug/CMakeFiles/bank_manager.dir
-C:/Users/zhang/OneDrive/桌面/学习相关/程序/bank-manager/cmake-build-debug/CMakeFiles/edit_cache.dir
-C:/Users/zhang/OneDrive/桌面/学习相关/程序/bank-manager/cmake-build-debug/CMakeFiles/rebuild_cache.dir
