@@ -1,11 +1,43 @@
 #include<iostream>
-#include<queue>
-#include<vector>
 #include<algorithm>
 #define MAX 100000
 int chunksize;
 struct Complete{
     int solved,sum;
+};
+class priorityQueueNode{
+    friend class priorityQueue;
+public:
+    int num;
+private:
+    priorityQueueNode *next;
+};
+class priorityQueue{
+private:
+    priorityQueueNode *head;
+public:
+    priorityQueue(){
+        head=(priorityQueueNode*)malloc(sizeof(priorityQueueNode));
+        head->next=nullptr;
+    }
+    void push(int num){
+        priorityQueueNode *p=head;
+        while(p->next&&p->next->num<=num){
+            p=p->next;
+        }
+        priorityQueueNode *node=(priorityQueueNode*)malloc(sizeof(priorityQueueNode));
+        node->num=num;
+        node->next=p->next;
+        p->next=node;
+    }
+    int pop(){
+        int num=head->next->num;
+        head->next=head->next->next;
+        return num;
+    }
+    int front(){
+        return head->next->num;
+    }
 };
 class CustNode{
 public:
@@ -86,12 +118,12 @@ private:
 };
 class Eventlist{
 private:
-    std::priority_queue<int,std::vector<int>,std::greater<int> > usableMemory;
+    priorityQueue usableMemory;
     CustNodeInList eventlist[MAX];
     int size;
 public:
     Eventlist():size(0){
-        for(int i=1;i<MAX;i++)
+        for(int i=MAX-1;i>1;i--)
             usableMemory.push(i);
     }
     void insert(int arrtime,int durtime,int amount){
@@ -99,8 +131,7 @@ public:
         while(eventlist[p].next!=-1&&eventlist[eventlist[p].next].arrtime<=arrtime){
             p=eventlist[p].next;
         }
-        int location=usableMemory.top();
-        usableMemory.pop();
+        int location=usableMemory.pop();
         CustNodeInList temp(arrtime,durtime,amount);
         eventlist[location]=temp;
         eventlist[location].next=eventlist[p].next;
