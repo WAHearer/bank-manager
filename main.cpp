@@ -101,56 +101,56 @@ private:
     QueueNode *head,*tail;
     int length,size,chunksize;//length为总空间，size为已分配空间
     void expand(){
-        QueueNode *p=this->tail;
-        for(int i=1;i<=this->chunksize;i++){
+        QueueNode *p=tail;
+        for(int i=1;i<=chunksize;i++){
             p->next=new QueueNode;
             p=p->next;
         }
-        p->next=this->head;
-        this->length+=this->chunksize;
+        p->next=head;
+        length+=chunksize;
     }
 public:
     explicit CircularQueue(int chunksize):length(chunksize),size(0),chunksize(chunksize){
-        this->head=new QueueNode;
-        QueueNode *p=this->head;
+        head=new QueueNode;
+        QueueNode *p=head;
         for(int i=1;i<chunksize;i++){
             p->next=new QueueNode;
             p=p->next;
         }
-        p->next=this->head;
-        this->tail=this->head;
+        p->next=head;
+        tail=head;
     }
     ~CircularQueue(){
-        QueueNode *p=this->head,*nxt;
-        for(int i=1;i<=this->length;i++){
-            if(i!=this->length)
+        QueueNode *p=head,*nxt;
+        for(int i=1;i<=length;i++){
+            if(i!=length)
                 nxt=p->next;
             free(p);
-            if(i!=this->length)
+            if(i!=length)
                 p=nxt;
         }
     }
     void push(CustNode node){
-        if(this->tail->next==this->head)
-            this->expand();
-        this->tail->node=node;
-        this->tail=this->tail->next;
-        this->size++;
+        if(tail->next==head)
+            expand();
+        tail->node=node;
+        tail=tail->next;
+        size++;
     }
     QueueNode pop(){
-        QueueNode head=*this->head;
-        this->head=this->head->next;
-        this->size--;
-        return head;
+        QueueNode headNode=*head;
+        head=head->next;
+        size--;
+        return headNode;
     }
     int getLength(){
-        return this->length;
+        return length;
     }
     int getSize(){
-        return this->size;
+        return size;
     }
     bool empty(){
-        return !this->size;
+        return !size;
     }
 };
 class CustNodeInList:public CustNode{
