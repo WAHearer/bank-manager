@@ -5,38 +5,82 @@ int chunksize;
 struct Complete{
     int solved,sum;
 };
-class priorityQueueNode{
-    friend class priorityQueue;
-public:
-    int num;
+class HeapNode{
+    friend class Heap;
 private:
-    priorityQueueNode *next;
+    explicit HeapNode(int val):val(val),father(nullptr),left(nullptr),right(nullptr){}
+    HeapNode *father,*left,*right;
+    int val;
 };
-class priorityQueue{
+class Heap{
 private:
-    priorityQueueNode *head;
-public:
-    priorityQueue(){
-        head=(priorityQueueNode*)malloc(sizeof(priorityQueueNode));
-        head->next=nullptr;
+    HeapNode *root;
+    HeapNode *getAvailableNode(HeapNode *now){
+        if(!now->left||!now->right)
+            return now;
+        return rand()%2?getAvailableNode(now->left):getAvailableNode(now->right);
     }
-    void push(int num){
-        priorityQueueNode *p=head;
-        while(p->next&&p->next->num<=num){
-            p=p->next;
+    HeapNode *getLeaf(HeapNode *now){
+        if(!now->left&&!now->right)
+            return now;
+        else if(now->left&&!now->right)
+            return getLeaf(now->left);
+        else if(!now->left&&now->right)
+            return getLeaf(now->right);
+        else
+            return rand()%2?getLeaf(now->left):getLeaf(now->right);
+    }
+    void pushUp(HeapNode *now){
+        if(now->father&&now->val<now->father->val){
+            std::swap(now->val,now->father->val);
+            pushUp(now->father);
         }
-        priorityQueueNode *node=(priorityQueueNode*)malloc(sizeof(priorityQueueNode));
-        node->num=num;
-        node->next=p->next;
-        p->next=node;
+    }
+    void pushDown(HeapNode *now){
+        if(now->left&&now->val>now->left->val){
+            std::swap(now->val,now->left->val);
+            pushDown(now->left);
+        }
+        else if(now->right&&now->val>now->right->val){
+            std::swap(now->val,now->right->val);
+            pushDown(now->right);
+        }
+    }
+public:
+    Heap():root(nullptr){}
+    void push(int val){
+        HeapNode *node=new HeapNode(val);
+        if(root==nullptr)
+            root=node;
+        else{
+            HeapNode *fatherNode=getAvailableNode(root);
+            if(!fatherNode->left)
+                fatherNode->left=node;
+            else
+                fatherNode->right=node;
+            node->father=fatherNode;
+            pushUp(node);
+        }
+    }
+    int top(){
+        return root->val;
     }
     int pop(){
-        int num=head->next->num;
-        head->next=head->next->next;
-        return num;
-    }
-    int front(){
-        return head->next->num;
+        int val=root->val;
+        if(!root->left&&!root->right){
+            delete root;
+            root=nullptr;
+            return val;
+        }
+        HeapNode *leaf=getLeaf(root);
+        std::swap(root->val,leaf->val);
+        if(leaf==leaf->father->left)
+            leaf->father->left=nullptr;
+        else
+            leaf->father->right=nullptr;
+        delete leaf;
+        pushDown(root);
+        return val;
     }
 };
 class CustNode{
@@ -50,6 +94,7 @@ public:
     CustNode node;
 private:
     QueueNode *next;
+    QueueNode():node(CustNode(0,0,0)),next(nullptr){}
 };
 class CircularQueue{
 private:
@@ -58,7 +103,7 @@ private:
     void expand(){
         QueueNode *p=this->tail;
         for(int i=1;i<=this->chunksize;i++){
-            p->next=(QueueNode*)malloc(sizeof(QueueNode));
+            p->next=new QueueNode;
             p=p->next;
         }
         p->next=this->head;
@@ -66,10 +111,10 @@ private:
     }
 public:
     explicit CircularQueue(int chunksize):length(chunksize),size(0),chunksize(chunksize){
-        this->head=(QueueNode*)malloc(sizeof(QueueNode));
+        this->head=new QueueNode;
         QueueNode *p=this->head;
         for(int i=1;i<chunksize;i++){
-            p->next=(QueueNode*)malloc(sizeof(QueueNode));
+            p->next=new QueueNode;
             p=p->next;
         }
         p->next=this->head;
@@ -118,12 +163,12 @@ private:
 };
 class Eventlist{
 private:
-    priorityQueue usableMemory;
+    Heap usableMemory;
     CustNodeInList eventlist[MAX];
     int size;
 public:
     Eventlist():size(0){
-        for(int i=MAX-1;i>1;i--)
+        for(int i=1;i<MAX;i++)
             usableMemory.push(i);
     }
     void insert(int arrtime,int durtime,int amount){
